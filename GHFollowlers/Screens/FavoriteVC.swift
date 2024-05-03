@@ -1,5 +1,5 @@
 //
-//  SearchVC.swift
+//  FavoritesListVC.swift
 //  GHFollowlers
 //
 //  Created by Sujit Sarkar on 1/5/24.
@@ -7,10 +7,12 @@
 
 import UIKit
 
-class SearchVC: UIViewController {
+class FavoriteVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title  = "Favorites"
     }
+
 }
