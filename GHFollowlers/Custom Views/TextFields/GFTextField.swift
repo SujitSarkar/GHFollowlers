@@ -21,7 +21,7 @@ class GFTextField: UITextField {
     private func configure(){
         translatesAutoresizingMaskIntoConstraints = false
         layer.cornerRadius          = 10
-        layer.borderWidth           = 2
+        layer.borderWidth           = 1
         layer.borderColor           = UIColor.systemGray4.cgColor
         
         placeholder                 = "Enter a username"

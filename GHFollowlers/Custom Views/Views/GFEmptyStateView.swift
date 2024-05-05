@@ -1,13 +1,13 @@
 //
-//  GFAvatarImageView.swift
+//  GFEmptyStateView.swift
 //  GHFollowlers
 //
-//  Created by Sujit Sarkar on 4/5/24.
+//  Created by Sujit Sarkar on 5/5/24.
 //
 
 import UIKit
 
-class GFAvatarImageView: UIImageView {
+class GFEmptyStateView: UIView {
 
     /*
     // Only override draw() if you perform custom drawing.
