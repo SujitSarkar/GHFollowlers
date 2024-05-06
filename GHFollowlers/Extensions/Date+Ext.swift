@@ -6,3 +6,12 @@
 //
 
 import Foundation
+
+extension Date {
+    
+    func convertToMonthDayYear() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d, yyyy" //Get formatter from: https://www.nsdateformatter.com/
+        return dateFormatter.string(from: self)
+    }
+}

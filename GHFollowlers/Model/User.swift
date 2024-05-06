@@ -6,3 +6,14 @@
 //
 
 import Foundation
+
+struct User: Codable, Hashable{
+    let login: String
+    let avatarUrl: String
+    let htmlUrl: String
+    let name: String?
+    let location: String?
+    let bio: String?
+    let publicRepos, publicGists, followers, following: Int?
+    let createdAt: String
+}
