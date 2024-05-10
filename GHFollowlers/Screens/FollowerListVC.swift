@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol FollowerListVCDelegate: AnyObject{
+    func didRequestFollowers(for username: String)
+}
+
 class FollowerListVC: UIViewController {
     
     enum Section{case main}
@@ -23,12 +27,42 @@ class FollowerListVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        navigationController?.navigationBar.prefersLargeTitles = false
+        configureViewController()
         configureSearchController()
         configureCollectionView()
         fetchFollowers(username: username, page: page)
         configureDatSource()
+    }
+    
+    func configureViewController(){
+        view.backgroundColor = .systemBackground
+        navigationController?.navigationBar.prefersLargeTitles = false
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
+        navigationItem.rightBarButtonItem = addButton
+    }
+    
+    @objc func addButtonTapped(){
+        showLoadingView()
+        NetworkManager.shared.getUser(for: username) { [weak self] result in
+            guard let self = self else {return}
+            self.dismisLoadingView()
+            
+            switch result {
+            case .success(let user):
+                let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
+                PersistenceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
+                    guard let self = self else {return}
+                    
+                    guard let error = error else {
+                        self.presentGFAlertOnMainThread(title: "Success!", message: "You have successfully favorited this user 🎉", buttonTitle: "OK")
+                        return
+                    }
+                    self.presentGFAlertOnMainThread(title: "Failed!", message: error.rawValue, buttonTitle: "OK")
+                }
+            case .failure(let error):
+                self.presentGFAlertOnMainThread(title: "Error!", message: error.rawValue, buttonTitle: "Close")
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -63,14 +97,14 @@ class FollowerListVC: UIViewController {
                 if followers.count < 100 {self.hasMoreFollowers = false}
                 self.followers.append(contentsOf: followers)
                 
-                if followers.isEmpty{
+                if followers.isEmpty {
                     DispatchQueue.main.async {
                         let message = "This user does not have any follower. Go follow them 😄"
-                        self.shwEmptyStateView(with: message, in: self.view)
+                        self.showEmptyStateView(with: message, in: self.view)
                     }
                 }
                 
-                self.updateData(for: followers)
+                self.updateData(for: self.followers)
             case .failure(let error):
                 self.presentGFAlertOnMainThread(title: "Error!", message: error.rawValue, buttonTitle: "OK")
             }
@@ -114,6 +148,7 @@ extension FollowerListVC: UICollectionViewDelegate{
         let follower            = activeArray[indexPath.row]
         let userInfoVC          = UserInfoVC()
         userInfoVC.username     = follower.login
+        userInfoVC.delegate     = self
         let navController       = UINavigationController(rootViewController: userInfoVC)
         present(navController, animated: true)
     }
@@ -132,4 +167,18 @@ extension FollowerListVC: UISearchResultsUpdating{
         updateData(for: filteredFollowers)
     }
     
+}
+
+extension FollowerListVC: FollowerListVCDelegate{
+    
+    func didRequestFollowers(for username: String) {
+        self.username = username
+        self.title = username
+        self.page = 1
+        self.followers.removeAll()
+        self.filteredFollowers.removeAll()
+        self.fetchFollowers(username: username, page: page)
+        self.collectionView.reloadData()
+        self.collectionView.setContentOffset(.zero, animated: true)
+    }
 }
